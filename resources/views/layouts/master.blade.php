@@ -85,6 +85,7 @@
              <!-- Main Content -->
              <div id="content">
                 @include('layouts.topbar')
+                @yield('content')
              </div>
              @include('layouts.footer')
          </div>

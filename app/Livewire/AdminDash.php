@@ -8,6 +8,6 @@ class AdminDash extends Component
 {
     public function render()
     {
-        return view('livewire.admin-dash');
+        return view('livewire.admin-dash')->extends('layouts/master')->section('content');;
     }
 }
