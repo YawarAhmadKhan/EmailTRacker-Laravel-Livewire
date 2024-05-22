@@ -3,11 +3,18 @@
     <div class="container-fluid">
 
         <!-- Page Heading -->
-        <div class="d-sm-flex align-items-center justify-content-between mb-4">
-            <h1 class="h3 mb-0 text-gray-800">Dashboard</h1>
-            <a href="#" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm"><i
-                    class="fas fa-download fa-sm text-white-50"></i> Generate Report</a>
+        <div class="row">
+           <div><h1 class="h3 mb-0 text-gray-800">Dashboard</h1></div>
         </div>
+            <div class="row d-flex justify-content-md-end">
+                <button id="authorize_button" class="col-md-2 col-sm-4 btn btn-sm btn-primary shadow-sm m-1"><i class="far fa-envelope"></i>&nbsp;Generate Report</button>
+                <button id="signout_button" class="col-md-2 col-sm-4 btn btn-sm btn-primary shadow-sm m-1" onclick="handleSignoutClick()"><i class="fas fa-sign-out-alt fa-sm text-white"></i>&nbsp;Sign Out</button>
+               <button id="refresh_button" class="col-md-2 col-sm-4  btn btn-sm btn-primary shadow-sm m-1" onclick="listMessages()"><i class="fas fa-sync fa-sm text-white"></i>&nbsp;Refresh Emails</button>
+               <button id="save_button" class="col-md-2 col-sm-4  btn btn-sm btn-primary shadow-sm m-1" onclick="saveEmails()"><i class="far fa-save fa-sm text-white"></i>&nbsp;Save Emails</button>
+            </div>
+           
+             
+        
 
         <!-- Content Row -->
         <div class="row">
@@ -329,4 +336,7 @@
 
     </div>
     <!-- /.container-fluid -->
+
+    
 </div>
+
