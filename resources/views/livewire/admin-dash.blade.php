@@ -492,15 +492,15 @@
             }
             // from: from, subject: subject, body: body,
             emailData.push({ htmlBody: htmlBody});
-            output += ` ${subject}\n\n`;
+            // output += ` ${htmlBody}\n\n`;
             // output += `From: ${from}\nSubject: ${subject}\nBody: ${body}\nHTML Body: ${htmlBody}\n\n`;
 
         }
         // document.getElementById('content').innerHTML = output;
         // document.getElementById('content').innerText = output;
         // livewire.emit('emailDataParsed', output);
-        @this.emailDataParsed(output);
-        console.log(output);
+        @this.emailDataParsed(emailData);
+        console.log(emailData);
 
     }
 

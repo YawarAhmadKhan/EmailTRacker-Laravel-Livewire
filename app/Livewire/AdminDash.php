@@ -12,20 +12,35 @@ class AdminDash extends Component
     public function render()
     {
         return view('livewire.admin-dash')->extends('layouts/master')->section('content');
-        
+
     }
     public function emailDataParsed($data)
     {
         $html = $data;
-        $crawler = new Crawler($html);
-        $sent = $this->extractData($html);
-        dump($sent);
-        $received = $this->extractData($html);
-        dump($received);
-        $htmlContentRefund = $this->extractData($html);
-        dump($htmlContentRefund);
-        $bitcoinReceived = $this->bitcoinData($html);
-        dd($bitcoinReceived);
+        // dd($html[0]);
+        // $crawler = new Crawler($html[0]);
+        // $data = [];
+        // $htmlContent = $html[0];
+        foreach ($html as $content) {
+            $sent = $this->extractData($content);
+            dump($sent);
+        }
+
+        dd('complte');
+        // $received = $this->extractData($htmlContent);
+        // dump($received);
+        // $htmlContentRefund = $this->extractData($htmlContent);
+        // $bitcoinReceived = $this->bitcoinData($htmlContent);
+        // $data['name'] = $crawler->filterXPath('//td/div[text()="Abhilash Tiruveedhi"]/text()')->text();
+        // $data['payment_to'] = $crawler->filterXPath('//td/div/span[text()="Payment to $AbhilashTiruveedhi"]/text()')->text();
+        // $data['amount'] = $crawler->filterXPath('//td/span[@style="line-height:72px;color:#bfbfbf;font-size:65px"]/text()')->text();
+        // $data['for_item'] = $crawler->filterXPath('//td/div[text()="for iPhone 11"]/text()')->text();
+        // $data['cash_refunded'] = $crawler->filterXPath('//td/div[text()="Cash Refunded"]/text()')->text();
+        // $data['protection_notice'] = $crawler->filterXPath('//td/div[text()="For your protection, your $405 payment to Abhilash Tiruveedhi was refunded"]/text()')->text();
+
+        // dd($data);
+
+
     }
     public function bitcoinData($emailContent)
     {
@@ -67,6 +82,7 @@ class AdminDash extends Component
 
         // Use XPath to extract the necessary data
         $recipient = $this->getNodeValue($crawler, '//div[contains(@style, "overflow:hidden;display:inline-block;font-size:18px;font-weight:500;line-height:24px;letter-spacing:0.2px;color:#333;font-family:-apple-system,BlinkMacSystemFont,Helvetica Neue,Helvetica,Arial,sans-serif;vertical-align:middle")]');
+        // dump($recipient);
         $amount = $this->getNodeValue($crawler, '//td[@align="center"]/span');
 
         $paymentNote = $this->getNodeValue($crawler, '//td[contains(@style, "font-size:16px")]/div');
