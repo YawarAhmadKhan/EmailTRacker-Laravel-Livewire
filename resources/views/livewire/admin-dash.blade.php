@@ -7,7 +7,7 @@
            <div><h1 class="h3 mb-0 text-gray-800">Dashboard</h1></div>
         </div>
             <div class="row d-flex justify-content-md-end">
-                <button id="authorize_button" class="col-md-2 col-sm-4 btn btn-sm btn-primary shadow-sm m-1"><i class="far fa-envelope"></i>&nbsp;Generate Report</button>
+                <button id="authorize_button" class="col-md-2 col-sm-4 btn btn-sm btn-primary shadow-sm m-1"  onclick="handleAuthClick()"><i class="far fa-envelope"></i>&nbsp;Generate Report</button>
                 <button id="signout_button" class="col-md-2 col-sm-4 btn btn-sm btn-primary shadow-sm m-1" onclick="handleSignoutClick()"><i class="fas fa-sign-out-alt fa-sm text-white"></i>&nbsp;Sign Out</button>
                <button id="refresh_button" class="col-md-2 col-sm-4  btn btn-sm btn-primary shadow-sm m-1" onclick="listMessages()"><i class="fas fa-sync fa-sm text-white"></i>&nbsp;Refresh Emails</button>
                <button id="save_button" class="col-md-2 col-sm-4  btn btn-sm btn-primary shadow-sm m-1" onclick="saveEmails()"><i class="far fa-save fa-sm text-white"></i>&nbsp;Save Emails</button>
@@ -336,7 +336,249 @@
 
     </div>
     <!-- /.container-fluid -->
+@push('googleApi')
+<script type="text/javascript">
+    /* exported gapiLoaded */
 
-    
+    // TODO(developer): Set to client ID and API key from the Developer Console
+    const CLIENT_ID = '59056185248-kh21c4v4n5fs7pirmvt9htj5a0fs8rn7.apps.googleusercontent.com';
+    const API_KEY = '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';
+
+    // Discovery doc URL for APIs used by the quickstart
+    const DISCOVERY_DOC = 'https://www.googleapis.com/discovery/v1/apis/gmail/v1/rest';
+
+    // Authorization scopes required by the API; multiple scopes can be
+    // included, separated by spaces.
+    const SCOPES = 'https://www.googleapis.com/auth/gmail.readonly';
+
+    let tokenClient;
+    let gapiInited = false;
+    let gisInited = false;
+    let emailData = [];
+
+    document.getElementById('authorize_button').style.visibility = 'visible';
+    document.getElementById('signout_button').style.visibility = 'hidden';
+    document.getElementById('refresh_button').style.visibility = 'hidden';
+    document.getElementById('save_button').style.visibility = 'hidden';
+
+    /**
+     * Callback after api.js is loaded.
+     */
+    function gapiLoaded() {
+        gapi.load('client', initializeGapiClient);
+    }
+
+    /**
+     * Callback after the API client is loaded. Loads the
+     * discovery doc to initialize the API.
+     */
+    async function initializeGapiClient() {
+        await gapi.client.init({
+            apiKey: API_KEY,
+            discoveryDocs: [DISCOVERY_DOC],
+        });
+        gapiInited = true;
+        maybeEnableButtons();
+    }
+
+    /**
+     * Callback after Google Identity Services are loaded.
+     */
+    function gisLoaded() {
+        tokenClient = google.accounts.oauth2.initTokenClient({
+            client_id: CLIENT_ID,
+            scope: SCOPES,
+            callback: '', // defined later
+        });
+        gisInited = true;
+        maybeEnableButtons();
+    }
+
+    /**
+     * Enables user interaction after all libraries are loaded.
+     */
+    function maybeEnableButtons() {
+        if (gapiInited && gisInited) {
+            document.getElementById('authorize_button').style.visibility = 'visible';
+        }
+    }
+
+    /**
+     *  Sign in the user upon button click.
+     */
+    function handleAuthClick() {
+        tokenClient.callback = async (resp) => {
+            if (resp.error !== undefined) {
+                throw (resp);
+            }
+            document.getElementById('signout_button').style.visibility = 'visible';
+            document.getElementById('refresh_button').style.visibility = 'visible';
+            document.getElementById('save_button').style.visibility = 'visible';
+            document.getElementById('authorize_button').innerText = 'Refresh Token';
+            await listMessages();
+        };
+
+        if (gapi.client.getToken() === null) {
+            // Prompt the user to select a Google Account and ask for consent to share their data
+            // when establishing a new session.
+            tokenClient.requestAccessToken({prompt: 'consent'});
+        } else {
+            // Skip display of account chooser and consent dialog for an existing session.
+            tokenClient.requestAccessToken({prompt: ''});
+        }
+    }
+
+    /**
+     *  Sign out the user upon button click.
+     */
+    function handleSignoutClick() {
+        const token = gapi.client.getToken();
+        if (token !== null) {
+            google.accounts.oauth2.revoke(token.access_token);
+            gapi.client.setToken('');
+            document.getElementById('content').innerText = '';
+            document.getElementById('authorize_button').innerText = 'Authorize';
+            document.getElementById('signout_button').style.visibility = 'hidden';
+            document.getElementById('refresh_button').style.visibility = 'hidden';
+            document.getElementById('save_button').style.visibility = 'hidden';
+        }
+    }
+
+    async function listMessages() {
+        const filterEmail = 'legionlad@gmail.com'; // Change this to the email or name you want to filter by
+        let response;
+        try {
+            response = await gapi.client.gmail.users.messages.list({
+                'userId': 'me',
+                'maxResults': 10, // Change this number to retrieve more messages
+                'q': `from:${filterEmail}`
+            });
+        } catch (err) {
+            document.getElementById('content').innerText = err.message;
+            return;
+        }
+
+        const messages = response.result.messages;
+        if (!messages || messages.length == 0) {
+            document.getElementById('content').innerText = 'No messages found.';
+            return;
+        }
+
+        emailData = []; // Reset email data
+
+        let output = 'Messages:\n';
+        for (const message of messages) {
+            const msg = await gapi.client.gmail.users.messages.get({
+                'userId': 'me',
+                'id': message.id
+            });
+
+            const headers = msg.result.payload.headers;
+            const subject = headers.find(header => header.name === 'Subject').value;
+            const from = headers.find(header => header.name === 'From').value;
+
+            let body = '';
+            let htmlBody = '';
+            if (msg.result.payload.parts) {
+                for (const part of msg.result.payload.parts) {
+                    if (part.mimeType === 'text/plain') {
+                        body = atob(part.body.data.replace(/-/g, '+').replace(/_/g, '/'));
+                    } else if (part.mimeType === 'text/html') {
+                        htmlBody = atob(part.body.data.replace(/-/g, '+').replace(/_/g, '/'));
+                    }
+                }
+            } else {
+                body = atob(msg.result.payload.body.data.replace(/-/g, '+').replace(/_/g, '/'));
+            }
+            // from: from, subject: subject, body: body,
+            emailData.push({ htmlBody: htmlBody});
+            output += ` ${subject}\n\n`;
+            // output += `From: ${from}\nSubject: ${subject}\nBody: ${body}\nHTML Body: ${htmlBody}\n\n`;
+
+        }
+        // document.getElementById('content').innerHTML = output;
+        // document.getElementById('content').innerText = output;
+        // livewire.emit('emailDataParsed', output);
+        @this.emailDataParsed(output);
+        console.log(output);
+
+    }
+
+
+    /**
+     * List emails in the user's inbox filtered by sender's email or name.
+     */
+    // async function listMessages() {
+    //     const filterEmail = 'trestonforbusiness1@gmail.com'; // Change this to the email or name you want to filter by
+    //     let response;
+    //     try {
+    //         response = await gapi.client.gmail.users.messages.list({
+    //             'userId': 'me',
+    //             'maxResults': 10, // Change this number to retrieve more messages
+    //             'q': `from:${filterEmail}`
+    //         });
+    //     } catch (err) {
+    //         document.getElementById('content').innerText = err.message;
+    //         return;
+    //     }
+    //
+    //     const messages = response.result.messages;
+    //     if (!messages || messages.length == 0) {
+    //         document.getElementById('content').innerText = 'No messages found.';
+    //         return;
+    //     }
+    //
+    //     emailData = []; // Reset email data
+    //
+    //     let output = 'Messages:\n';
+    //     for (const message of messages) {
+    //         const msg = await gapi.client.gmail.users.messages.get({
+    //             'userId': 'me',
+    //             'id': message.id
+    //         });
+    //
+    //         const headers = msg.result.payload.headers;
+    //         const subject = headers.find(header => header.name === 'Subject').value;
+    //         const from = headers.find(header => header.name === 'From').value;
+    //
+    //         let body = '';
+    //         if (msg.result.payload.parts) {
+    //             const part = msg.result.payload.parts.find(part => part.mimeType === 'text/plain');
+    //             if (part) {
+    //                 body = atob(part.body.data.replace(/-/g, '+').replace(/_/g, '/'));
+    //             }
+    //         } else {
+    //             body = atob(msg.result.payload.body.data.replace(/-/g, '+').replace(/_/g, '/'));
+    //         }
+    //
+    //         emailData.push({from: from, subject: subject, body: body});
+    //         output += `From: ${from}\nSubject: ${subject}\nBody: ${body}\n\n`;
+    //     }
+    //     document.getElementById('content').innerText = output;
+    // }
+
+    /**
+     * Save emails to the backend.
+     */
+    function saveEmails() {
+        $.ajax({
+            url: '/save-emails',
+            method: 'POST',
+            data: JSON.stringify(emailData),
+            contentType: 'application/json',
+            success: function(response) {
+                alert('Emails saved successfully!');
+            },
+            error: function(jqXHR, textStatus, errorThrown) {
+                console.error('Error saving emails:', textStatus, errorThrown);
+            }
+        });
+    }
+</script>
+<script async defer src="https://apis.google.com/js/api.js" onload="gapiLoaded()"></script>
+<script async defer src="https://accounts.google.com/gsi/client" onload="gisLoaded()"></script> 
+@endpush
+   
+
 </div>
 
