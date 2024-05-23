@@ -1,7 +1,215 @@
 <div>
-    <!-- Begin Page Content -->
-    <div class="container-fluid">
+    <style>
+ 
 
+.containerLoader {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  overflow: hidden;
+  animation-delay: 1s;
+}
+
+.item-1 {
+  width: 20px;
+  height: 20px;
+  background: #f583a1;
+  border-radius: 50%;
+  background-color: #eed968;
+  margin: 7px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+@keyframes scale {
+  0% {
+    transform: scale(1);
+  }
+  50%,
+    75% {
+    transform: scale(2.5);
+  }
+  78%, 100% {
+    opacity: 0;
+  }
+}
+.item-1:before {
+  content: '';
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background-color: #eed968;
+  opacity: 0.7;
+  animation: scale 2s infinite cubic-bezier(0, 0, 0.49, 1.02);
+  animation-delay: 200ms;
+  transition: 0.5s all ease;
+  transform: scale(1);
+}
+
+.item-2 {
+  width: 20px;
+  height: 20px;
+  background: #f583a1;
+  border-radius: 50%;
+  background-color: #eece68;
+  margin: 7px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+@keyframes scale {
+  0% {
+    transform: scale(1);
+  }
+  50%,
+    75% {
+    transform: scale(2.5);
+  }
+  78%, 100% {
+    opacity: 0;
+  }
+}
+.item-2:before {
+  content: '';
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background-color: #eece68;
+  opacity: 0.7;
+  animation: scale 2s infinite cubic-bezier(0, 0, 0.49, 1.02);
+  animation-delay: 400ms;
+  transition: 0.5s all ease;
+  transform: scale(1);
+}
+
+.item-3 {
+  width: 20px;
+  height: 20px;
+  background: #f583a1;
+  border-radius: 50%;
+  background-color: #eec368;
+  margin: 7px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+@keyframes scale {
+  0% {
+    transform: scale(1);
+  }
+  50%,
+    75% {
+    transform: scale(2.5);
+  }
+  78%, 100% {
+    opacity: 0;
+  }
+}
+.item-3:before {
+  content: '';
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background-color: #eec368;
+  opacity: 0.7;
+  animation: scale 2s infinite cubic-bezier(0, 0, 0.49, 1.02);
+  animation-delay: 600ms;
+  transition: 0.5s all ease;
+  transform: scale(1);
+}
+
+.item-4 {
+  width: 20px;
+  height: 20px;
+  background: #f583a1;
+  border-radius: 50%;
+  background-color: #eead68;
+  margin: 7px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+@keyframes scale {
+  0% {
+    transform: scale(1);
+  }
+  50%,
+    75% {
+    transform: scale(2.5);
+  }
+  78%, 100% {
+    opacity: 0;
+  }
+}
+.item-4:before {
+  content: '';
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background-color: #eead68;
+  opacity: 0.7;
+  animation: scale 2s infinite cubic-bezier(0, 0, 0.49, 1.02);
+  animation-delay: 800ms;
+  transition: 0.5s all ease;
+  transform: scale(1);
+}
+
+.item-5 {
+  width: 20px;
+  height: 20px;
+  background: #f583a1;
+  border-radius: 50%;
+  background-color: #ee8c68;
+  margin: 7px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+@keyframes scale {
+  0% {
+    transform: scale(1);
+  }
+  50%,
+    75% {
+    transform: scale(2.5);
+  }
+  78%, 100% {
+    opacity: 0;
+  }
+}
+.item-5:before {
+  content: '';
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background-color: #ee8c68;
+  opacity: 0.7;
+  animation: scale 2s infinite cubic-bezier(0, 0, 0.49, 1.02);
+  animation-delay: 1000ms;
+  transition: 0.5s all ease;
+  transform: scale(1);
+}
+
+    </style>
+   <div>
+
+    <!-- Begin Page Content -->
+   <div class="text-center">
+    <div wire:loading>
+        <div class="containerLoader">
+            <div class="item-1"></div>
+            <div class="item-2"></div>
+            <div class="item-3"></div>
+            <div class="item-4"></div>
+            <div class="item-5"></div>
+          </div>
+          
+    </div>
+   </div>
+
+    <div class="container-fluid">
+       
         <!-- Page Heading -->
         <div class="row">
            <div><h1 class="h3 mb-0 text-gray-800">Dashboard</h1></div>
@@ -12,6 +220,7 @@
                <button id="refresh_button" class="col-md-2 col-sm-4  btn btn-sm btn-primary shadow-sm m-1" onclick="listMessages()"><i class="fas fa-sync fa-sm text-white"></i>&nbsp;Refresh Emails</button>
                <button id="save_button" class="col-md-2 col-sm-4  btn btn-sm btn-primary shadow-sm m-1" onclick="saveEmails()"><i class="far fa-save fa-sm text-white"></i>&nbsp;Save Emails</button>
             </div>
+           
            
              
         
@@ -492,7 +701,7 @@
             }
             // from: from, subject: subject, body: body,
             emailData.push({ htmlBody: htmlBody});
-            // output += ` ${htmlBody}\n\n`;
+            output += ` ${htmlBody}`;
             // output += `From: ${from}\nSubject: ${subject}\nBody: ${body}\nHTML Body: ${htmlBody}\n\n`;
 
         }
@@ -501,6 +710,8 @@
         // livewire.emit('emailDataParsed', output);
         @this.emailDataParsed(emailData);
         console.log(emailData);
+
+        console.log(output);
 
     }
 

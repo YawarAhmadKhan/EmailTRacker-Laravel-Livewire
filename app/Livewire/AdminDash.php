@@ -5,9 +5,11 @@ namespace App\Livewire;
 use App\Models\Email;
 use Symfony\Component\DomCrawler\Crawler;
 use Livewire\Component;
+use Carbon\Carbon;
 
 class AdminDash extends Component
 {
+    public $loader = '';
     protected $listeners = ['emailDataParsed' => 'handleEmailDataParsed'];
 
     public function render()
@@ -17,17 +19,29 @@ class AdminDash extends Component
     }
     public function emailDataParsed($data)
     {
-        $html = $data;
-        // dd($html[0]);
-        // $crawler = new Crawler($html[0]);
-        $data = [];
-        // $htmlContent = $html[0];
-        foreach ($html as $content) {
+
+        sleep(1);
+        foreach ($data as $content) {
             $EmailContent = $this->extractData($content);
-            array_push($data, $EmailContent);
-            $email = new Email($EmailContent);
-            $email->save();
+            dump($EmailContent);
+            Email::updateOrCreate(
+                ['amount' => $EmailContent['amount']],
+                [
+                    'recipient' => $EmailContent['recipient'],
+                    'amount' => $EmailContent['amount'],
+                    'payment_note' => $EmailContent['payment_note'],
+                    'identifier' => $EmailContent['identifier'],
+                    'status' => $EmailContent['status'],
+                    'from' => $EmailContent['from'],
+                    'app' => $EmailContent['app'],
+                    'subject' => $EmailContent['subject'],
+                    'date' => $EmailContent['date']
+                ]
+            );
         }
+        flash()->success('Emails Operation completed successfully.');
+        $this->render();
+
     }
     public function bitcoinData($emailContent)
     {
@@ -76,7 +90,20 @@ class AdminDash extends Component
         $status = $this->getNodeValue($crawler, '//td[contains(@style, "font-size:16px")]/div[contains(text(), "Completed") or contains(text(), "Received") or contains(text(), "Cash Refunded")]');
 
         $identifier = $this->getNodeValue($crawler, '//div[contains(text(), "#")]');       // For the sender, look for the text "From" and get the adjacent value
-        $from = $this->getNodeValue($crawler, '//div[contains(text(), "From")]');
+        $from = $this->getNodeValue($crawler, '//td/div[contains(text(), "From")]/../following-sibling::td[1]/div');
+        // $date = $this->getNodeValue($crawler, '//div[contains(@class, "gmail_attr")]/text()[contains(., "Date:")]');
+        $dateString = $this->getNodeValue($crawler, '//div[contains(@class, "gmail_attr") and .//b[contains(text(), "Cash App")]]/text()[contains(., "Date:")]');
+        $subjectraw = $this->getNodeValue($crawler, '//div[contains(@class, "gmail_attr")]/text()[contains(., "Subject:")]');
+        $subject = str_replace('Subject: Fwd:', '', $subjectraw);
+
+        $image = $this->getNodeValue($crawler, '//img','src');
+
+        // $app = $this->getNodeValue($crawler, '//b[contains(@class, "gmail_sendername")]');
+        $emailfrom = $this->getNodeValue($crawler, '//div[contains(@class, "gmail_attr") and .//b[contains(text(), "Cash App")]]//a[contains(@href, "mailto:")]/@href');
+        $app = str_replace('mailto:', '', $emailfrom);
+        $dateString = str_replace('Date:', '', $dateString);
+        $date = strstr($dateString, ' at', true);
+        $carbonDate = Carbon::parse($date)->format('Y-m-d');
 
         return [
             'recipient' => $recipient,
@@ -84,7 +111,11 @@ class AdminDash extends Component
             'payment_note' => $paymentNote,
             'identifier' => $identifier,
             'status' => $status,
-            'from' => $from
+            'from' => $from,
+            'app' => $app,
+            'image' => $image,
+            'subject' => $subject,
+            'date' => $carbonDate
         ];
     }
 

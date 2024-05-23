@@ -15,5 +15,8 @@ class Email extends Model
         'identifier',
         'status',
         'from',
+        'subject',
+        'app',
+        'date'
     ];
 }
