@@ -2,6 +2,7 @@
 
 namespace App\Livewire;
 
+use App\Models\Email;
 use Symfony\Component\DomCrawler\Crawler;
 use Livewire\Component;
 
@@ -19,28 +20,14 @@ class AdminDash extends Component
         $html = $data;
         // dd($html[0]);
         // $crawler = new Crawler($html[0]);
-        // $data = [];
+        $data = [];
         // $htmlContent = $html[0];
         foreach ($html as $content) {
-            $sent = $this->extractData($content);
-            dump($sent);
+            $EmailContent = $this->extractData($content);
+            array_push($data, $EmailContent);
+            $email = new Email($EmailContent);
+            $email->save();
         }
-
-        dd('complte');
-        // $received = $this->extractData($htmlContent);
-        // dump($received);
-        // $htmlContentRefund = $this->extractData($htmlContent);
-        // $bitcoinReceived = $this->bitcoinData($htmlContent);
-        // $data['name'] = $crawler->filterXPath('//td/div[text()="Abhilash Tiruveedhi"]/text()')->text();
-        // $data['payment_to'] = $crawler->filterXPath('//td/div/span[text()="Payment to $AbhilashTiruveedhi"]/text()')->text();
-        // $data['amount'] = $crawler->filterXPath('//td/span[@style="line-height:72px;color:#bfbfbf;font-size:65px"]/text()')->text();
-        // $data['for_item'] = $crawler->filterXPath('//td/div[text()="for iPhone 11"]/text()')->text();
-        // $data['cash_refunded'] = $crawler->filterXPath('//td/div[text()="Cash Refunded"]/text()')->text();
-        // $data['protection_notice'] = $crawler->filterXPath('//td/div[text()="For your protection, your $405 payment to Abhilash Tiruveedhi was refunded"]/text()')->text();
-
-        // dd($data);
-
-
     }
     public function bitcoinData($emailContent)
     {
