@@ -550,8 +550,7 @@
     /* exported gapiLoaded */
 
     // TODO(developer): Set to client ID and API key from the Developer Console
-    const CLIENT_ID = '59056185248-kh21c4v4n5fs7pirmvt9htj5a0fs8rn7.apps.googleusercontent.com';
-    const API_KEY = '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';
+    
 
     // Discovery doc URL for APIs used by the quickstart
     const DISCOVERY_DOC = 'https://www.googleapis.com/discovery/v1/apis/gmail/v1/rest';
