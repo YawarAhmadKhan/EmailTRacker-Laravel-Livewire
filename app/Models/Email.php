@@ -17,6 +17,8 @@ class Email extends Model
         'from',
         'subject',
         'app',
+        'refund-amount',
+        'refund-note',
         'date'
     ];
 }
