@@ -25,7 +25,7 @@ class AdminDash extends Component
             $EmailContent = $this->extractData($content);
             dump($EmailContent);
             Email::updateOrCreate(
-                ['amount' => $EmailContent['amount']],
+                ['subject' => $EmailContent['subject']],
                 [
                     'recipient' => $EmailContent['recipient'],
                     'amount' => $EmailContent['amount'],
@@ -33,6 +33,8 @@ class AdminDash extends Component
                     'identifier' => $EmailContent['identifier'],
                     'status' => $EmailContent['status'],
                     'from' => $EmailContent['from'],
+                    'refund-note' => $EmailContent['refund-note'],
+                    'refund-amount' => $EmailContent['refund-amount'],
                     'app' => $EmailContent['app'],
                     'subject' => $EmailContent['subject'],
                     'date' => $EmailContent['date']
@@ -76,6 +78,12 @@ class AdminDash extends Component
         ];
 
     }
+    public function extractAmount($string)
+    {
+        $pattern = '/\$\d+(?:,\d{3})*(?:\.\d{2})?/';
+        preg_match($pattern, $string, $matches);
+        return $matches[0] ?? null;
+    }
     private function extractData($emailContent)
     {
         // Create a new Crawler instance and load the email content
@@ -96,8 +104,9 @@ class AdminDash extends Component
         $subjectraw = $this->getNodeValue($crawler, '//div[contains(@class, "gmail_attr")]/text()[contains(., "Subject:")]');
         $subject = str_replace('Subject: Fwd:', '', $subjectraw);
 
-        $image = $this->getNodeValue($crawler, '//img','src');
-
+        // $image = $this->getNodeValue($crawler, '//img', 'src');
+        $refundNote = $this->getNodeValue($crawler, '//td[contains(@style, "color:#999;font-family:-apple-system,BlinkMacSystemFont,Helvetica Neue,Helvetica,Arial,sans-serif;font-size:16px;line-height:24px;font-weight:400")]/div');
+        $refundamount = $this->extractAmount($refundNote);
         // $app = $this->getNodeValue($crawler, '//b[contains(@class, "gmail_sendername")]');
         $emailfrom = $this->getNodeValue($crawler, '//div[contains(@class, "gmail_attr") and .//b[contains(text(), "Cash App")]]//a[contains(@href, "mailto:")]/@href');
         $app = str_replace('mailto:', '', $emailfrom);
@@ -105,6 +114,19 @@ class AdminDash extends Component
         $date = strstr($dateString, ' at', true);
         $carbonDate = Carbon::parse($date)->format('Y-m-d');
 
+        // bitcion//
+        $bitcoinAmount = $this->getNodeValue($crawler, '//td[div[text()="Bitcoin Amount"]]/following-sibling::td/div');
+        $exchangeRate = $this->getNodeValue($crawler, '//td[div[text()="Exchange Rate"]]/following-sibling::td/div');
+        $totalSaleAmount = $this->getNodeValue($crawler, '//td[div[text()="Total Sale Amount"]]/following-sibling::td/div');
+        $fee = $this->getNodeValue($crawler, '//td[div[text()="Fee"]]/following-sibling::td/div');
+        $total = $this->getNodeValue($crawler, '//td[div[text()="Total"]]/following-sibling::td/div');
+        $data = [
+            "BitcoinAmount" => $bitcoinAmount,
+            "ExchangeRate" => $exchangeRate,
+            "TotalSaleAmount" => $totalSaleAmount,
+            "Fee" => $fee
+        ];
+        $sellorderBtc = json_encode($data);
         return [
             'recipient' => $recipient,
             'amount' => $amount,
@@ -113,9 +135,11 @@ class AdminDash extends Component
             'status' => $status,
             'from' => $from,
             'app' => $app,
-            'image' => $image,
+            'refund-note' => $refundNote,
+            'refund-amount' => $refundamount,
             'subject' => $subject,
-            'date' => $carbonDate
+            'date' => $carbonDate,
+            'sellorderBtc' => $sellorderBtc
         ];
     }
 
